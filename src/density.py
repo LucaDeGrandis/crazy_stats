@@ -2,7 +2,7 @@ from typing import List
 from .extractive_tokens import greedy_match
 from .utils import square_len
 
-def density(
+def Density(
         A: List[str],
         S: List[str]
     ) -> float:

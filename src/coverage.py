@@ -1,7 +1,7 @@
 from typing import List
 from .extractive_tokens import greedy_match
 
-def coverage(
+def Coverage(
         A: List[str],
         S: List[str]
     ) -> float:

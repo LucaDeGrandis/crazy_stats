@@ -1,6 +1,6 @@
 from typing import List
 
-def compression(
+def Compression(
         A: List[str],
         S: List[str]
     ) -> float:
@@ -8,4 +8,4 @@ def compression(
     Compression algorithm for strings as defined in https://aclanthology.org/N18-1065.pdf.
     """
 
-    return len(A) / len(S)
+    return len(S) / len(A)
