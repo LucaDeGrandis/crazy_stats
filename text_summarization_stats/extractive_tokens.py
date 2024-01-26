@@ -2,8 +2,8 @@ from typing import List
 
 
 def greedy_match(
+    summary_tokens: List[str],  # summary
     document_tokens: List[str],  # source text
-    summary_tokens: List[str]  # summary
 ) -> List[List[str]]:
     """
     Greedy matchin algorithm for strings.
