@@ -47,7 +47,7 @@ class Tokenizer(ABC):
     def postprocess_tokenization(
             self,
             text: Union[str, List[str], List[List[str]]]
-        ) -> Union[str, List[str]]
+        ) -> Union[str, List[str]]:
         """
         Creates a tokenizer based on the specified tokenizer name.
         """
