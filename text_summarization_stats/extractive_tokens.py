@@ -1,30 +1,31 @@
 from typing import List
 
+
 def greedy_match(
-        A: List[str],  # source text
-        S: List[str]  # summary
-    ) -> List[List[str]]:
+    document_tokens: List[str],  # source text
+    summary_tokens: List[str]  # summary
+) -> List[List[str]]:
     """
-    Greedy matchin algorithm for strings
+    Greedy matchin algorithm for strings.
     """
     F = []
-    i, j = 0, 0  # i for S, j for A
-    while i < len(S):
+    i, j = 0, 0  # i for summary, j for document
+    while i < len(summary_tokens):
         f = []
-        while j < len(A):
-            if S[i] == A[j]:
+        while j < len(document_tokens):
+            if summary_tokens[i] == document_tokens[j]:
                 i_prime, j_prime = i, j
-                while S[i_prime] == A[j_prime]:
+                while summary_tokens[i_prime] == document_tokens[j_prime]:
                     i_prime += 1
                     j_prime += 1
 
-                    if i_prime >= len(S):
+                    if i_prime >= len(summary_tokens):
                         break
-                    if j_prime >= len(A):
+                    if j_prime >= len(document_tokens):
                         break
 
                 if len(f) < (i_prime - i - 1):
-                    f = S[i:i_prime]
+                    f = summary_tokens[i:i_prime]
                 j = j_prime
             else:
                 j += 1

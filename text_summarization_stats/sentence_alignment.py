@@ -1,20 +1,21 @@
-from typing import List
 import copy
 import evaluate
-rouge = evaluate.load('rouge')
 import numpy as np
+from typing import List
+rouge = evaluate.load('rouge')
+
 
 def sentence_alignment(
-    A: List[str],  # the source sentences
-    S: List[str]  # the summary sentences
+    document_sentences: List[str],  # the source sentences
+    summary_sentences: List[str]  # the summary sentences
 ):
     """
     Performs sentence alignment as defined in the paper https://aclanthology.org/P18-1061.pdf
     """
     alignment = []
-    for S_sentence in S:
+    for S_sentence in summary_sentences:
         aligned = []
-        remaining = copy.deepcopy(A)
+        remaining = copy.deepcopy(document_sentences)
         while remaining:
             rouge_gain = relative_rouge_gain(S_sentence, aligned, remaining)
             max_pos = np.argmax(rouge_gain)
@@ -22,11 +23,11 @@ def sentence_alignment(
                 break
             new_aligned = remaining.pop(max_pos)
             aligned.append(new_aligned)
-        
+
         alignment.append((S_sentence, aligned))
-    
+
     return alignment
-        
+
 
 def relative_rouge_gain(
     sentence: str,  # the summary sentence (singular)
@@ -45,5 +46,5 @@ def relative_rouge_gain(
     gains = []
     for remaining_sentence in remaining:
         gains.append(rouge.compute(predictions=[sentence], references=[[aligned] + [remaining_sentence]])['rougeL'] - last_rouge_score)
-    
+
     return gains
