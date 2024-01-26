@@ -1,0 +1,2 @@
+- add the class to identity tokenizer
+- all tokenizers should have a super on the tokenizer class
