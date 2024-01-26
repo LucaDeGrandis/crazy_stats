@@ -12,7 +12,7 @@ class EntityFinder:
 
     def __call__(self, text):
         assert isinstance(text, str)
-        ner_model_output = self.find_entities(text)
+        ner_model_output = self.run_model(text)
         entities = [entity.text for entity in ner_model_output.ents]
         entity_classes = [entity.label_ for entity in ner_model_output.ents]
         return entities, entity_classes
