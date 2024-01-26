@@ -5,9 +5,9 @@ class EntityFinder:
     def __init__(self, **kwargs):
         for key, item in kwargs.items():
             setattr(self, key, item)
-        self.initialize_enty_finder(self)
+        self.initialize_entity_finder()
 
-    def initialize_enty_finder(self):
+    def initialize_entity_finder(self):
         self.ner_model = spacy.load("en_core_web_sm")
 
     def __call__(self, text):
