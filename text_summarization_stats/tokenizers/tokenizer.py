@@ -1,10 +1,5 @@
 from typing import List, Union
-from text_summarization_stats.tokenizers.nltk_tokenizer import NLTKTokenizer
-from text_summarization_stats.tokenizers.identity_tokenizer import identity_tokenizer
 from abc import ABC, abstractmethod
-
-
-tokenizer_map = {"nltk_tokenizer": NLTKTokenizer, "identity_tokenizer": identity_tokenizer}
 
 
 class Tokenizer(ABC):
