@@ -26,6 +26,8 @@ def compute_entity_density(
         unique_entities = list(set(example_text_entities))
 
         entity_density = entity_density(unique_entities, example_text_tokenized)
+        print(density)
+        > 0.15
     """
     assert isinstance(unique_entities, list)
     assert len(unique_entities) == len(set(unique_entities)), \
