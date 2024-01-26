@@ -1,4 +1,4 @@
-from text_summarization_stats.tokenizers import Tokenizer
+from text_summarization_stats.tokenizers.tokenizer import Tokenizer
 from typing import List
 
 

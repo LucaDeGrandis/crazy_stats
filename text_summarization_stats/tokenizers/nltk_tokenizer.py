@@ -1,4 +1,4 @@
-from text_summarization_stats.tokenizers import Tokenizer
+from text_summarization_stats.tokenizers.tokenizer import Tokenizer
 from typing import List, Union
 from nltk.tokenize import word_tokenize, wordpunct_tokenize, sent_tokenize
 
