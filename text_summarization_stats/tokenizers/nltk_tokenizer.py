@@ -3,6 +3,10 @@ from typing import List, Union
 from nltk.tokenize import word_tokenize, wordpunct_tokenize, sent_tokenize
 
 
+import nltk
+nltk.download('punkt')
+
+
 nltk_tokenizers_map = {
     'word_tokenize': word_tokenize,
     'wordpunct_tokenize': wordpunct_tokenize,
