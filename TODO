@@ -1,2 +1,4 @@
-- add the class to identity tokenizer
-- all tokenizers should have a super on the tokenizer class
+- check the validity of the greedy match
+- write code for extractive fragments coverage
+- write code for extractive fragments density
+- write code for abstractiveness
