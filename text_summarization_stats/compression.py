@@ -1,6 +1,6 @@
 from typing import List
 
-def Compression(
+def compression(
         A: List[str],
         S: List[str]
     ) -> float:
