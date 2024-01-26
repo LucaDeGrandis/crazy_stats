@@ -1,5 +1,5 @@
 from text_summarization_stats.tokenizers.tokenizer import Tokenizer
-from typing import List
+from typing import List, Union
 
 
 def identity_tokenizer(text):
@@ -22,3 +22,12 @@ class IdentityTokenizer(Tokenizer):
         Creates the tokenizer
         """
         self.tokenizer = identity_tokenizer
+
+    def postprocess_tokenization(
+            self,
+            text: Union[str, List[str], List[List[str]]]
+        ) -> Union[str, List[str]]:
+        """
+        Creates a tokenizer based on the specified tokenizer name.
+        """
+        return text
