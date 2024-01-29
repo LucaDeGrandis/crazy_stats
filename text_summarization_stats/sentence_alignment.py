@@ -111,16 +111,13 @@ def multiple_sentences_alignment(
         kwargs['exhaustive'] = False
     sentence_aligner = SENTENCE_ALIGNMENT_MAPPING[kwargs['alignment_type']]
     all_alignments = []
-    sentence_numbers = []
     if kwargs['alignment_type'] == 'simple':
         for target_sentence in target_sentences:
-            _, alignment, number_sentences = sentence_aligner(target_sentence, document_sentences, rouge_type=kwargs['rouge_type'])
+            _, alignment = sentence_aligner(target_sentence, document_sentences, rouge_type=kwargs['rouge_type'])
             all_alignments.append(alignment)
-            sentence_numbers.append(number_sentences)
     elif kwargs['alignment_type'] == 'complete':
         for target_sentence in target_sentences:
-            _, alignment, number_sentences = sentence_aligner(target_sentence, document_sentences, rouge_type=kwargs['rouge_type'], exhaustive=kwargs['exhaustive'])
+            _, alignment = sentence_aligner(target_sentence, document_sentences, rouge_type=kwargs['rouge_type'], exhaustive=kwargs['exhaustive'])
             all_alignments.append(alignment)
-            sentence_numbers.append(number_sentences)
 
-    return all_alignments, sentence_numbers
+    return all_alignments
