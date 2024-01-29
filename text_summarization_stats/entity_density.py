@@ -25,7 +25,7 @@ def compute_entity_density(
         example_text_entities, _ = entity_finder(input_document)
         unique_entities = list(set(example_text_entities))
 
-        entity_density = entity_density(unique_entities, example_text_tokenized)
+        entity_density = compute_entity_density(unique_entities, example_text_tokenized)
         print(density)
         > 0.15
     """
