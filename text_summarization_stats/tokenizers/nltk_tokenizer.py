@@ -37,7 +37,4 @@ class NLTKTokenizer(Tokenizer):
         """
         Creates a tokenizer based on the specified tokenizer name.
         """
-        if self.tokenizer_name:
-            return list(text[0])
-        else:
-            return text[0]
+        return text
