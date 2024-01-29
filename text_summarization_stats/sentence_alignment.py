@@ -1,8 +1,52 @@
 import copy
 import evaluate
 import numpy as np
-from typing import List
+from typing import List, Tuple
+from itertools import combinations
+
+
 rouge = evaluate.load('rouge')
+
+
+def sentence_alignment_complete(
+    target_sentence: str,  # the summary sentences
+    document_sentences: List[str],  # the source sentences
+    rouge_type: str = 'rouge2',  # rhe ROUGE type to use
+    exhaustive: bool = False  # whether to perform exhaustive search
+) -> Tuple[float, List[str]]:
+    """
+    Performs sentence alignment for a single sentence as defined in the paper https://aclanthology.org/P18-1061.pdf
+    """
+    assert rouge_type in ['rouge1', 'rouge2', 'rougeL', 'rougeLS']
+    assert document_sentences
+    assert isinstance(document_sentences, list)
+    assert isinstance(document_sentences[0], str)
+    assert isinstance(target_sentence, str)
+
+    if len(document_sentences) == 1:
+        return 0.0, document_sentences
+
+    # initialize
+    alignment = []
+    ROUGE_score = 1e-6
+    k = 1
+    while True:
+        if k > len(document_sentences):
+            break
+        document_sentences_samples = list(combinations(document_sentences, k))
+        target_sentences = [target_sentence] * (len(document_sentences_samples))
+        ROUGE_scores = rouge.compute(predictions=document_sentences_samples, references=target_sentences, rouge_types=[rouge_type], use_aggregator=False)[rouge_type]
+        best_index = np.argmax(ROUGE_scores)
+        if len(best_index) > 1:
+            best_index = best_index[0]
+        if ROUGE_scores[best_index] > ROUGE_score:
+            ROUGE_score = ROUGE_scores[best_index]
+            alignment = list(document_sentences_samples[best_index])
+        elif not exhaustive:
+            break
+        k += 1
+
+    return ROUGE_score, alignment
 
 
 def sentence_alignment(
