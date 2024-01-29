@@ -26,6 +26,7 @@ def Fusion(
             **{'alignment_type': 'simple'}
         )
     """
+    assert alignments
     lengths = list(map(len, alignments))
 
     return sum(lengths) / len(lengths)
