@@ -46,7 +46,7 @@ def sentence_alignment_complete(
             break
         k += 1
 
-    return ROUGE_score, alignment, aligned_sentences
+    return ROUGE_score, aligned_sentences
 
 
 def sentence_alignment_simple(
@@ -87,7 +87,7 @@ def sentence_alignment_simple(
         if not remaining_sentences:
             break
 
-    return ROUGE_score, alignment
+    return ROUGE_score, aligned_sentences
 
 
 SENTENCE_ALIGNMENT_MAPPING = {
