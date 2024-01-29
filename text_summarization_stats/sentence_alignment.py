@@ -29,6 +29,7 @@ def sentence_alignment_complete(
     alignment = ''
     ROUGE_score = 1e-6
     k = 1
+    aligned_sentences = 0
     while True:
         if k > len(document_sentences):
             break
@@ -39,11 +40,12 @@ def sentence_alignment_complete(
         if ROUGE_scores[best_index] > ROUGE_score:
             ROUGE_score = ROUGE_scores[best_index]
             alignment = document_sentences_samples[best_index][0]
+            aligned_sentences += 1
         elif not exhaustive:
             break
         k += 1
 
-    return ROUGE_score, alignment
+    return ROUGE_score, alignment, aligned_sentences
 
 
 def sentence_alignment_simple(
@@ -69,6 +71,7 @@ def sentence_alignment_simple(
     alignment = ''
     ROUGE_score = 1e-6
     remaining_sentences = copy.deepcopy(document_sentences)
+    aligned_sentences = 0
     while True:
         document_sentences_samples = [[alignment + ' ' + new_sentence] for new_sentence in remaining_sentences]
         target_sentences = [target_sentence] * (len(document_sentences_samples))
@@ -78,6 +81,7 @@ def sentence_alignment_simple(
             ROUGE_score = ROUGE_scores[best_index]
             alignment = document_sentences_samples[best_index][0]
             remaining_sentences.pop(best_index)
+            aligned_sentences += 1
         else:
             break
         if not remaining_sentences:
@@ -107,13 +111,16 @@ def multiple_sentences_alignment(
         kwargs['exhaustive'] = False
     sentence_aligner = SENTENCE_ALIGNMENT_MAPPING[kwargs['alignment_type']]
     all_alignments = []
+    sentence_numbers = []
     if kwargs['alignment_type'] == 'simple':
         for target_sentence in target_sentences:
-            _, alignment = sentence_aligner(target_sentence, document_sentences, rouge_type=kwargs['rouge_type'])
+            _, alignment, number_sentences = sentence_aligner(target_sentence, document_sentences, rouge_type=kwargs['rouge_type'])
             all_alignments.append(alignment)
+            sentence_numbers.append(number_sentences)
     elif kwargs['alignment_type'] == 'complete':
         for target_sentence in target_sentences:
-            _, alignment = sentence_aligner(target_sentence, document_sentences, rouge_type=kwargs['rouge_type'], exhaustive=kwargs['exhaustive'])
+            _, alignment, number_sentences = sentence_aligner(target_sentence, document_sentences, rouge_type=kwargs['rouge_type'], exhaustive=kwargs['exhaustive'])
             all_alignments.append(alignment)
+            sentence_numbers.append(number_sentences)
 
-    return all_alignments
+    return all_alignments, sentence_numbers
