@@ -1,5 +1,5 @@
-import itertools
 from typing import List
+from itertools import chain
 from .utils import sentence_ranks
 
 def content_distribution(
@@ -9,6 +9,6 @@ def content_distribution(
     """
     Computes the content distribution score as defined in the paper https://arxiv.org/pdf/2309.04269.pdf
     """
-    sentences_list = itertools.chain.from_iterable(selected_sentences)
+    sentences_list = chain.from_iterable(selected_sentences)
     ranks = sentence_ranks(sentences_list, A)
     return sum(ranks) / len(ranks)
