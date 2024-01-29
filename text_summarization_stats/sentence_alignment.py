@@ -5,6 +5,9 @@ from typing import List, Tuple
 from itertools import combinations
 
 
+rouge = evaluate.load('rouge')
+
+
 def sentence_alignment_complete(
     target_sentence: str,  # the summary sentences
     document_sentences: List[str],  # the source sentences
@@ -22,8 +25,6 @@ def sentence_alignment_complete(
 
     if len(document_sentences) == 1:
         return 0.0, document_sentences
-
-    rouge = evaluate.load('rouge')
 
     # initialize
     alignment = []
@@ -62,8 +63,6 @@ def sentence_alignment_simple(
 
     if len(document_sentences) == 1:
         return 0.0, document_sentences
-
-    rouge = evaluate.load('rouge')
 
     # initialize
     alignment = []
