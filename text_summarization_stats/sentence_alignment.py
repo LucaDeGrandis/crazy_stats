@@ -84,47 +84,32 @@ def sentence_alignment_simple(
     return ROUGE_score, alignment
 
 
+SENTENCE_ALIGNMENT_MAPPING = {
+    'simple': sentence_alignment_simple,
+    'complete': sentence_alignment_complete,
+}
 
-def sentence_alignment(
+
+def multiple_sentences_alignment(
+    target_sentences: List[str],  # the summary sentences
     document_sentences: List[str],  # the source sentences
-    summary_sentences: List[str]  # the summary sentences
+    **kwargs
 ):
+    """ Wrapper around the sentence alignment to work on multiple sentences.
     """
-    Performs sentence alignment as defined in the paper https://aclanthology.org/P18-1061.pdf
-    """
-    alignment = []
-    for S_sentence in summary_sentences:
-        aligned = []
-        remaining = copy.deepcopy(document_sentences)
-        while remaining:
-            rouge_gain = relative_rouge_gain(S_sentence, aligned, remaining)
-            max_pos = np.argmax(rouge_gain)
-            if rouge_gain[max_pos] <= .0:
-                break
-            new_aligned = remaining.pop(max_pos)
-            aligned.append(new_aligned)
-
-        alignment.append((S_sentence, aligned))
-
-    return alignment
-
-
-def relative_rouge_gain(
-    sentence: str,  # the summary sentence (singular)
-    aligned: List[str],  # the list of aligned source sentences
-    remaining: List[str]  # the remaining sentences (plural)
-):
-    """
-    Computes relative rouge gain as described in the paper https://aclanthology.org/P18-1061.pdf
-    """
-
-    if aligned:
-        last_rouge_score = rouge.compute(predictions=[sentence], references=[[aligned]])['rougeL']
-    else:
-        last_rouge_score = 0.0
-
-    gains = []
-    for remaining_sentence in remaining:
-        gains.append(rouge.compute(predictions=[sentence], references=[[aligned] + [remaining_sentence]])['rougeL'] - last_rouge_score)
-
-    return gains
+    if 'alignment_type' not in kwargs:
+        kwargs['alignment_type'] = 'simple'
+    if 'rouge_type' not in kwargs:
+        kwargs['rouge_type'] = 'rouge2'
+    if 'exhaustive' not in kwargs:
+        kwargs['exhaustive'] = False
+    sentence_aligner = SENTENCE_ALIGNMENT_MAPPING[kwargs['alignment_type']]
+    all_alignments = []
+    if kwargs['alignment_type'] == 'simple':
+        for target_sentence in target_sentences:
+            _, alignment = sentence_aligner(target_sentence, document_sentences, rouge_type=kwargs['rouge_type'])
+            all_alignments.append(alignment)
+    elif kwargs['alignment_type'] == 'complete':
+        for target_sentence in target_sentences:
+            _, alignment = sentence_aligner(target_sentence, document_sentences, rouge_type=kwargs['rouge_type'], exhaustive=kwargs['exhaustive'])
+            all_alignments.append(alignment)
