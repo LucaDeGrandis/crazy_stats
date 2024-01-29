@@ -26,19 +26,19 @@ def sentence_alignment_complete(
     rouge = evaluate.load('rouge')
 
     # initialize
-    alignment = []
+    alignment = ''
     ROUGE_score = 1e-6
     k = 1
     while True:
         if k > len(document_sentences):
             break
-        document_sentences_samples = list(map(list, combinations(document_sentences, k)))
+        document_sentences_samples = [[' '.join(combined_sentences)] for combined_sentences in combinations(document_sentences, k)]
         target_sentences = [target_sentence] * (len(document_sentences_samples))
         ROUGE_scores = rouge.compute(predictions=target_sentences, references=document_sentences_samples, rouge_types=[rouge_type], use_aggregator=False)[rouge_type]
         best_index = np.argmax(ROUGE_scores)
         if ROUGE_scores[best_index] > ROUGE_score:
             ROUGE_score = ROUGE_scores[best_index]
-            alignment = list(document_sentences_samples[best_index])
+            alignment = document_sentences_samples[best_index][0]
         elif not exhaustive:
             break
         k += 1
@@ -66,17 +66,18 @@ def sentence_alignment_simple(
     rouge = evaluate.load('rouge')
 
     # initialize
-    alignment = []
+    alignment = ''
     ROUGE_score = 1e-6
     remaining_sentences = copy.deepcopy(document_sentences)
     while True:
-        document_sentences_samples = [alignment + [new_sentence] for new_sentence in remaining_sentences]
+        document_sentences_samples = [[alignment + ' ' + new_sentence] for new_sentence in remaining_sentences]
         target_sentences = [target_sentence] * (len(document_sentences_samples))
         ROUGE_scores = rouge.compute(predictions=target_sentences, references=document_sentences_samples, rouge_types=[rouge_type], use_aggregator=False)[rouge_type]
         best_index = np.argmax(ROUGE_scores)
         if ROUGE_scores[best_index] > ROUGE_score:
             ROUGE_score = ROUGE_scores[best_index]
-            alignment += [remaining_sentences.pop(best_index)]
+            alignment = document_sentences_samples[best_index][0]
+            remaining_sentences.pop(best_index)
         else:
             break
         if not remaining_sentences:
