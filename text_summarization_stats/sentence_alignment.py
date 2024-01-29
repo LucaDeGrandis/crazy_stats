@@ -113,3 +113,5 @@ def multiple_sentences_alignment(
         for target_sentence in target_sentences:
             _, alignment = sentence_aligner(target_sentence, document_sentences, rouge_type=kwargs['rouge_type'], exhaustive=kwargs['exhaustive'])
             all_alignments.append(alignment)
+
+    return all_alignments
