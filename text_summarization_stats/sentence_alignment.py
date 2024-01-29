@@ -33,12 +33,10 @@ def sentence_alignment_complete(
     while True:
         if k > len(document_sentences):
             break
-        document_sentences_samples = list(combinations(document_sentences, k))
+        document_sentences_samples = list(map(list, combinations(document_sentences, k)))
         target_sentences = [target_sentence] * (len(document_sentences_samples))
-        ROUGE_scores = rouge.compute(predictions=document_sentences_samples, references=target_sentences, rouge_types=[rouge_type], use_aggregator=False)[rouge_type]
+        ROUGE_scores = rouge.compute(predictions=target_sentences, references=document_sentences_samples, rouge_types=[rouge_type], use_aggregator=False)[rouge_type]
         best_index = np.argmax(ROUGE_scores)
-        if len(best_index) > 1:
-            best_index = best_index[0]
         if ROUGE_scores[best_index] > ROUGE_score:
             ROUGE_score = ROUGE_scores[best_index]
             alignment = list(document_sentences_samples[best_index])
