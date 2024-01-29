@@ -41,7 +41,7 @@ def sentence_alignment_complete(
         if ROUGE_scores[best_index] > ROUGE_score:
             ROUGE_score = ROUGE_scores[best_index]
             alignment = document_sentences_samples[best_index][0]
-            aligned_sentences = sentence_combinations[best_index]
+            aligned_sentences = list(sentence_combinations[best_index])
         elif not exhaustive:
             break
         k += 1
