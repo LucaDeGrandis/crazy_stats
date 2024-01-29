@@ -29,18 +29,19 @@ def sentence_alignment_complete(
     alignment = ''
     ROUGE_score = 1e-6
     k = 1
-    aligned_sentences = 0
+    aligned_sentences = []
     while True:
         if k > len(document_sentences):
             break
-        document_sentences_samples = [[' '.join(combined_sentences)] for combined_sentences in combinations(document_sentences, k)]
+        sentence_combinations = list(combinations(document_sentences, k))
+        document_sentences_samples = [[' '.join(combined_sentences)] for combined_sentences in sentence_combinations]
         target_sentences = [target_sentence] * (len(document_sentences_samples))
         ROUGE_scores = rouge.compute(predictions=target_sentences, references=document_sentences_samples, rouge_types=[rouge_type], use_aggregator=False)[rouge_type]
         best_index = np.argmax(ROUGE_scores)
         if ROUGE_scores[best_index] > ROUGE_score:
             ROUGE_score = ROUGE_scores[best_index]
             alignment = document_sentences_samples[best_index][0]
-            aligned_sentences += 1
+            aligned_sentences = sentence_combinations[best_index]
         elif not exhaustive:
             break
         k += 1
@@ -71,7 +72,7 @@ def sentence_alignment_simple(
     alignment = ''
     ROUGE_score = 1e-6
     remaining_sentences = copy.deepcopy(document_sentences)
-    aligned_sentences = 0
+    aligned_sentences = []
     while True:
         document_sentences_samples = [[alignment + ' ' + new_sentence] for new_sentence in remaining_sentences]
         target_sentences = [target_sentence] * (len(document_sentences_samples))
@@ -80,8 +81,7 @@ def sentence_alignment_simple(
         if ROUGE_scores[best_index] > ROUGE_score:
             ROUGE_score = ROUGE_scores[best_index]
             alignment = document_sentences_samples[best_index][0]
-            remaining_sentences.pop(best_index)
-            aligned_sentences += 1
+            aligned_sentences.append(remaining_sentences.pop(best_index))
         else:
             break
         if not remaining_sentences:
