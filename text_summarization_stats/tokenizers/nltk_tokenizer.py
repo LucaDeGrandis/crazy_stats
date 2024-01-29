@@ -26,15 +26,18 @@ class NLTKTokenizer(Tokenizer):
         else:
             self.tokenizer_name = 'word_tokenize'
         super().__init__()
-    
+
     def create_tokenizer(self):
         self.tokenizer = nltk_tokenizers_map[self.tokenizer_name]
 
     def postprocess_tokenization(
-            self,
-            text: Union[str, List[str], List[List[str]]]
-        ) -> Union[str, List[str]]:
+        self,
+        text: Union[str, List[str], List[List[str]]]
+    ) -> Union[str, List[str]]:
         """
         Creates a tokenizer based on the specified tokenizer name.
         """
-        return text
+        if self.tokenizer_name:
+            return list(text[0])
+        else:
+            return text[0]
