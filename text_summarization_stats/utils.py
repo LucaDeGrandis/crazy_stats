@@ -12,7 +12,8 @@ def square_len(
 
 def sentence_ranks(
     selected_sentences: List[str],
-    A: List[str]
+    A: List[str],
+    normalize: bool = False,
 ) -> List[int]:
     """
     Computes the ranks of the selected sentences in the original document
@@ -20,4 +21,6 @@ def sentence_ranks(
     ranks = []
     for sentence in selected_sentences:
         ranks.append(A.index(sentence) + 1)
+    if normalize:
+        ranks = [rank / len(A) for rank in ranks]
     return ranks
