@@ -14,10 +14,13 @@ import numpy as np
 parser = JsonOutputParser()
 
 
+parser = JsonOutputParser()
+
+
 def run_DRPE(
     model,
     input_document: str,
-    summaries: str,
+    summary: str,
     coarse_grained_prompt_template: str,
     fine_grained_prompt_template: str,
     static_roles: List[str],
@@ -44,7 +47,7 @@ def run_DRPE(
     evaluation = evaluator(
         model,  # the LLM class with a __call__ function
         input_document,  # the input document
-        summaries,  # the summary that must be evaluated
+        summary,  # the summary that must be evaluated
         roles_clustered,  # the clustered roles
         few_shot_prompt,  # the few shot prompt template is used to insert the generated roles in the prompt
         comparison_prompt_template,  # beginning of the prompt
@@ -65,6 +68,35 @@ def run_DRPE(
         counts = Counter(scores)
 
     return scores, counts
+
+
+def dynamic_roles_generator(
+    model,
+    input_text: str,
+    coarse_grained_prompt_template: str,
+    fine_grained_prompt_template: str,
+) -> Tuple[str, str]:
+    """ Generates the dynamic roles
+
+    Args:
+        model: The model used to generate the dynamic roles.
+        input_text: The input text.
+
+    Returns:
+        A tuple containing the coarse grained roles and the fine grained roles.
+        The tuple has two elements since the output is unpocessed text from the LLM.
+    """
+    # Generate coarse grained roles
+    coarse_grained_prompt = PromptTemplate.from_template(coarse_grained_prompt_template)
+    model.add_prompt(coarse_grained_prompt)
+    coarse_grained_roles = model(input={'text': input_text})
+
+    # Generate fine grained roles
+    fine_grained_prompt = PromptTemplate.from_template(fine_grained_prompt_template)
+    model.add_prompt(fine_grained_prompt)
+    fine_grained_roles = model(input={'text': input_text})
+
+    return coarse_grained_roles, fine_grained_roles
 
 
 def dynamic_role_parser(
@@ -105,41 +137,6 @@ def dynamic_role_parser(
         types_descriptions = [[x["user_type"], x["general_intent"]] for x in parser.parse(text)]
     except:
         types_descriptions = []
-    return types_descriptions
-
-
-def dynamic_role_parser(
-    text: str
-) -> Dict[str, str]:
-    """ Parses the output of LLM to extract the dynamic roles
-
-    Args:
-        text: The output of LLM.
-
-    Returns:
-        A list of roles.
-
-    Warning:
-        This function is not robust to changes in the output of LLM.
-        For as it is right now the LLM is expected to follow the following format:
-            1. role 1: role description
-            2. role 2: role description
-            ...
-    """
-    # parse the roles
-    roles_raw = [x.strip() for x in text.split('\n')]
-    roles_raw = list(filter(lambda x: x, roles_raw))
-    roles = [x[3:].strip() for x in roles_raw]
-
-    # Save the role types and descriptions
-    types_descriptions = []
-    for role in roles:
-        role_split = role.split(':')
-        types_descriptions.append([
-            role_split[0].strip(),
-            ':'.join(role_split[1:]).strip()
-        ])
-
     return types_descriptions
 
 
