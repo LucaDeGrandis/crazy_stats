@@ -49,8 +49,7 @@ def run_openai_geval(
             time.sleep(0.5)
 
             all_responses = [_response.choices[i].message.content for i in range(len(_response.choices))]
-            instance['all_responses'] = all_responses
-            new_json = instance
+            new_json = all_responses
             break
         except Exception as e:
             print(e)
