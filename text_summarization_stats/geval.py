@@ -71,9 +71,9 @@ def parse_output(output):
         try:
             score = float(matched.group(1))
         except:
-            score = 0
+            score = None
     else:
-        score = 0
+        score = None
     return score
 
 
@@ -121,6 +121,7 @@ def run_GEval(
         geval_responses[key] = run_openai_geval(
             item, input_data, openai_key, model
         )
+        relevant_responses = list(filter(lambda x: x is not None, geval_responses[key]))
         geval_scores[key] = compute_GEval_score(
             geval_responses[key]['all_responses']
         )
