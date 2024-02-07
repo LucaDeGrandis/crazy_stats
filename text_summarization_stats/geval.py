@@ -75,7 +75,8 @@ def parse_output(output):
 
 
 def compute_GEval_score(
-    GPT_output: List[str]
+    GPT_output: List[str],
+    value_range: List[int] = [1, 5],
 ) -> float:
     """ Computes the G-Eval score from the textual GPT output
 
@@ -87,6 +88,7 @@ def compute_GEval_score(
     """
     all_scores = [parse_output(x) for x in GPT_output]
     all_scores = list(filter(lambda x: x is not None, all_scores))
+    all_scores = list(filter(lambda x: x>=value_range[0] and x<=value_range[1], all_scores))
     if all_scores:
         return sum(all_scores) / len(all_scores)
     else:
@@ -116,14 +118,24 @@ def run_GEval(
         The G-Eval scores for each prompt template
 
     """
+    assert 'fluency' in prompt_templates
+    assert 'relevance' in prompt_templates
+    assert 'coherence' in prompt_templates
+    assert 'consistency' in prompt_templates
+
     geval_responses = {}
     geval_scores = {}
     for key, item in prompt_templates.items():
         geval_responses[key] = run_openai_geval(
             item, input_data, openai_key, model
         )
+        if key=='fluency':
+            value_range = [1, 3]
+        else:
+            value_range = [1, 5]
         geval_scores[key] = compute_GEval_score(
-            geval_responses[key]['all_responses']
+            geval_responses[key]['all_responses'],
+            value_range
         )
 
     return geval_scores, geval_responses
