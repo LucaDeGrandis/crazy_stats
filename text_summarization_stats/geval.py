@@ -9,7 +9,7 @@ import re
 def run_openai_geval(
         prompt_template: str,
         instance: Dict[str, str],
-        key: str,
+        openai_key: str,
         model: str,
 ) -> List[Dict[str, float]]:
     """ Function to compute G-Eval
@@ -34,7 +34,7 @@ def run_openai_geval(
     while True:
         try:
             client = OpenAI(
-                api_key=key,
+                api_key=openai_key,
             )
             _response = client.chat.completions.create(
                 model=model,
@@ -95,7 +95,7 @@ def compute_GEval_score(
 def run_GEval(
     prompt_templates: Dict[str, str],
     input_data: Dict[str, str],
-    key: str,
+    openai_key: str,
     model: str,
 ) -> Dict[str, float]:
     """ Computes the G-Eval score for a list of prompt templates 
@@ -119,7 +119,7 @@ def run_GEval(
     geval_scores = {}
     for key, item in prompt_templates.items():
         geval_responses[key] = run_openai_geval(
-            item, input_data, key, model
+            item, input_data, openai_key, model
         )
         geval_scores[key] = compute_GEval_score(
             geval_responses[key]['all_responses']
