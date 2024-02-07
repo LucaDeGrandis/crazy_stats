@@ -17,7 +17,7 @@ parser = JsonOutputParser()
 def run_DRPE(
     model,
     input_document: str,
-    summary: str,
+    summaries: str,
     coarse_grained_prompt_template: str,
     fine_grained_prompt_template: str,
     static_roles: List[str],
@@ -44,7 +44,7 @@ def run_DRPE(
     evaluation = evaluator(
         model,  # the LLM class with a __call__ function
         input_document,  # the input document
-        summary,  # the summary that must be evaluated
+        summaries,  # the summary that must be evaluated
         roles_clustered,  # the clustered roles
         few_shot_prompt,  # the few shot prompt template is used to insert the generated roles in the prompt
         comparison_prompt_template,  # beginning of the prompt
