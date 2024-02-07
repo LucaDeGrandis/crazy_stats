@@ -67,33 +67,45 @@ def run_DRPE(
     return scores, counts
 
 
-def dynamic_roles_generator(
-    model,
-    input_text: str,
-    coarse_grained_prompt_template: str,
-    fine_grained_prompt_template: str,
-) -> Tuple[str, str]:
-    """ Generates the dynamic roles
+def dynamic_role_parser(
+    text: str
+) -> Dict[str, str]:
+    """ Parses the output of LLM to extract the dynamic roles
 
     Args:
-        model: The model used to generate the dynamic roles.
-        input_text: The input text.
+        text: The output of LLM.
 
     Returns:
-        A tuple containing the coarse grained roles and the fine grained roles.
-        The tuple has two elements since the output is unpocessed text from the LLM.
+        A list of roles.
+
+    Warning:
+        This function is not robust to changes in the output of LLM.
+        For as it is right now the LLM is expected to follow the following format:
+            1. role 1: role description
+            2. role 2: role description
+            ...
     """
-    # Generate coarse grained roles
-    coarse_grained_prompt = PromptTemplate.from_template(coarse_grained_prompt_template)
-    model.add_prompt(coarse_grained_prompt)
-    coarse_grained_roles = model(input={'text': input_text})
+    # # parse the roles
+    # roles_raw = [x.strip() for x in text.split('\n')]
+    # roles_raw = list(filter(lambda x: x, roles_raw))
+    # roles = [x[3:].strip() for x in roles_raw]
 
-    # Generate fine grained roles
-    fine_grained_prompt = PromptTemplate.from_template(fine_grained_prompt_template)
-    model.add_prompt(fine_grained_prompt)
-    fine_grained_roles = model(input={'text': input_text})
+    # # Save the role types and descriptions
+    # types_descriptions = []
+    # for role in roles:
+    #     role_split = role.split(':')
+    #     types_descriptions.append([
+    #         role_split[0].strip(),
+    #         ':'.join(role_split[1:]).strip()
+    #     ])
 
-    return coarse_grained_roles, fine_grained_roles
+    # return types_descriptions
+
+    try:
+        types_descriptions = [[x["user_type"], x["general_intent"]] for x in parser.parse(text)]
+    except:
+        types_descriptions = []
+    return types_descriptions
 
 
 def dynamic_role_parser(
