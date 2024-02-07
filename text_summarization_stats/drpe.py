@@ -1,5 +1,4 @@
-from typing import List, Dict, Any, Tuple
-import argparse
+from typing import List, Dict, Tuple
 
 from sentence_transformers import SentenceTransformer
 
@@ -11,11 +10,61 @@ from sklearn.cluster import KMeans
 from collections import Counter
 import numpy as np
 
-from .utils import load_jsonl_file, write_jsonl_file
-from .llms.llm_map import MODELS
-
 
 parser = JsonOutputParser()
+
+
+def run_DRPE(
+    model,
+    input_document: str,
+    summary: str,
+    coarse_grained_prompt_template: str,
+    fine_grained_prompt_template: str,
+    static_roles: List[str],
+    few_shot_prompt: str,
+    comparison_prompt_template: str,
+    suffix_prompt_template: str,
+    embedding_gnerator: str = 'all-MiniLM-L6-v2',
+    roles_clusters: int = 4,
+) -> float:
+    # We use the dynamic_roles_generator function which inserts the input document in the prompt template and runs the model.
+    # The model must be a class with a __call__ function that calls the model and extracts the output correctly.
+    coarse_grained_roles, fine_grained_roles = dynamic_roles_generator(model, input_document, coarse_grained_prompt_template, fine_grained_prompt_template)
+
+    # Extract the roles from text with the dynamic roles parser
+    roles = dynamic_role_parser(coarse_grained_roles) + dynamic_role_parser(fine_grained_roles)
+
+    # Cluster the roles with the dynamic roles clusteres which uses the sentencetransformer package and kmeans.
+    roles_clustered = dynamic_roles_clutering(roles, embedding_gnerator, roles_clusters)
+
+    # Add the static roles to the clusterd roles
+    roles_clustered.extend(static_roles)
+
+    # Run the evaluation
+    evaluation = evaluator(
+        model,  # the LLM class with a __call__ function
+        input_document,  # the input document
+        summary,  # the summary that must be evaluated
+        roles_clustered,  # the clustered roles
+        few_shot_prompt,  # the few shot prompt template is used to insert the generated roles in the prompt
+        comparison_prompt_template,  # beginning of the prompt
+        suffix_prompt_template,  # this is added at the end. The evaluator gives an error without it
+    )
+
+    # Parse the output
+    try:
+        parsed_evaluation = parser.parse(evaluation)
+    except:
+        parsed_evaluation = []
+
+    if not parsed_evaluation:
+        scores = []
+        counts = {}
+    else:
+        scores = [x['preferred_summary'] for x in parsed_evaluation]
+        counts = Counter(scores)
+
+    return scores, counts
 
 
 def dynamic_roles_generator(
@@ -47,11 +96,39 @@ def dynamic_roles_generator(
     return coarse_grained_roles, fine_grained_roles
 
 
-def distance_measure(
-    vector_a,
-    vector_b
-):
-    return sum([(a - b) ** 2 for a, b in zip(vector_a, vector_b)])
+def dynamic_role_parser(
+    text: str
+) -> Dict[str, str]:
+    """ Parses the output of LLM to extract the dynamic roles
+
+    Args:
+        text: The output of LLM.
+
+    Returns:
+        A list of roles.
+
+    Warning:
+        This function is not robust to changes in the output of LLM.
+        For as it is right now the LLM is expected to follow the following format:
+            1. role 1: role description
+            2. role 2: role description
+            ...
+    """
+    # parse the roles
+    roles_raw = [x.strip() for x in text.split('\n')]
+    roles_raw = list(filter(lambda x: x, roles_raw))
+    roles = [x[3:].strip() for x in roles_raw]
+
+    # Save the role types and descriptions
+    types_descriptions = []
+    for role in roles:
+        role_split = role.split(':')
+        types_descriptions.append([
+            role_split[0].strip(),
+            ':'.join(role_split[1:]).strip()
+        ])
+
+    return types_descriptions
 
 
 def dynamic_roles_clutering(
@@ -85,39 +162,11 @@ def dynamic_roles_clutering(
     return roles
 
 
-def dynamic_role_parser(
-    text: str
-) -> Dict[str, str]:
-    """ Parses the output of LLM to extract the dynamic roles
-
-    Args:
-        text: The output of LLM.
-
-    Returns:
-        A list of roles.
-
-    Warning:
-        This function is not robust to changes in the output of LLM.
-        For as it is right now the LLM is expected to follow the following format:
-            1. role 1: role description
-            2. role 2: role description
-            ...
-    """
-    # parse the roles
-    roles_raw = [x.strip() for x in text.split('\n')]
-    roles_raw = list(filter(lambda x: x, roles_raw))
-    roles = [x[3:].strip() for x in roles_raw]
-
-    # Save the role types and descriptions
-    types_descriptions = []
-    for role in roles:
-        role_split = role.split(':')
-        types_descriptions.append([
-            role_split[0].strip(),
-            ':'.join(role_split[1:])
-        ])
-
-    return roles
+def distance_measure(
+    vector_a,
+    vector_b
+):
+    return sum([(a - b) ** 2 for a, b in zip(vector_a, vector_b)])
 
 
 def evaluator(
@@ -133,11 +182,11 @@ def evaluator(
     # Define the formatted roles for the few shot prompt template
     examples = []
     for line in roles:
-        if len(line.split(':')) < 2:
+        if len(line) < 2:
             continue
         examples.append({
-            'role_type': line.split(':')[0].strip(),
-            'role_description': line.split(':')[1].strip(),
+            'role_type': line[0],
+            'role_description': line[1],
         })
 
     example_prompt = PromptTemplate(
@@ -159,93 +208,3 @@ def evaluator(
         'summary_1': summaries[0],
         'summary_2': summaries[1]
     })
-
-
-def argparser():
-    parser = argparse.ArgumentParser(description='Run the program')
-    parser.add_argument('dataset', type=str, help='The datset path. It must be a jsonl file.')
-    parser.add_argument('out_file', type=str, help='The output path. It must be a jsonl file.')
-    parser.add_argument('openai_key', type=str, help='The OpenAI key.')
-    parser.add_argument('--verbose', action='store_true', help='Saves intermediate results.')
-    parser.add_argument('--roles_generator', type=str, default='gpt-3.5-turbo-1106', help='The model used to generate the dynamic roles.')
-    parser.add_argument('--roles_generator_templates', type=int, default=32, help='The model used to generate the dynamic roles.')
-    parser.add_argument('--embedding_gnerator', type=str, default='all-MiniLM-L6-v2', help='The model used to generate embeddings for roles clustering.')
-    parser.add_argument('--roles_clusters', type=int, default=4, help='Number of dynamic roles.')
-    parser.add_argument('--evaluator', type=str, default='gpt-3.5-turbo-1106', help='The model used to evaluate the summaries.')
-    return parser.parse_args()
-
-
-def __main__():
-    args = argparser()
-
-    # Load the datset
-    dataset = load_jsonl_file(args.dataset)
-
-    # Create the model
-    roles_generator = MODELS[args.roles_generator](**{
-        'model': args.roles_generator,
-        'temperature': 0,
-        'openai_api_key': args.openai_key,
-        'seed': 42
-    })
-    evaluation_model = MODELS[args.roles_generator](**{
-        'model': args.evaluator,
-        'temperature': 0,
-        'openai_api_key': args.openai_key,
-        'seed': 42
-    })
-    # roles_generator = OpenAI(model=args.roles_generator, temperature=0, openai_api_key=args.openai_key, model_kwargs={'seed': 42})
-    # evaluation_model = OpenAI(model=args.evaluator, temperature=0, openai_api_key=args.openai_key, model_kwargs={'seed': 42})
-
-    results = []
-
-    for _el in dataset:
-        res = {}
-
-        # Generate the roles
-        coarse_grained_roles, fine_grained_roles = dynamic_roles_generator(roles_generator, _el['text'], coarse_grained_prompt_template, fine_grained_prompt_template)
-        roles = dynamic_role_parser(coarse_grained_roles) + dynamic_role_parser(fine_grained_roles)
-        roles_clustered = dynamic_roles_clutering(roles, args.embedding_gnerator, args.roles_clusters)
-        if args.verbose:
-            res['generated_roles'] = {
-                'coarse_grained_roles': coarse_grained_roles,
-                'fine_grained_roles': fine_grained_roles
-            }
-            res['clustered_roles'] = roles_clustered
-            res['static_roles'] = static_roles
-            results.append(res)
-
-        # Add the static roles to the clusters
-        roles_clustered.extend(static_roles)
-
-        # Run the evaluation
-        evaluation = evaluator(
-            evaluation_model,
-            _el['text'],
-            _el['summaries'],
-            roles_clustered,
-            few_shot_prompt,
-            comparison_prompt_template,
-            suffix_prompt_template,
-        )
-        res['evaluation'] = evaluation
-
-        # Parse the output
-        try:
-            parsed_evaluation = parser.parse(evaluation)
-        except: 
-            parsed_evaluation = []
-
-        if not parsed_evaluation:
-            results.append({'response': 'error'})
-            continue
-
-        scores = [x['preferred_summary'] for x in parsed_evaluation]
-        res['counts'] = Counter(scores)
-        results.append(res)
-
-    write_jsonl_file(args.out_file, results, overwrite=True)
-
-
-if __name__ == '__main__':
-    __main__()
