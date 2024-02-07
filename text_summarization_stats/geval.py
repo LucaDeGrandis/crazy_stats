@@ -90,7 +90,6 @@ def compute_GEval_score(
     """
     all_scores = [parse_output(x) for x in GPT_output]
     all_scores = list(filter(lambda x: x is not None, all_scores))
-    print(all_scores)
     if all_scores:
         return sum(all_scores) / len(all_scores)
     else:
