@@ -1,7 +1,5 @@
-from typing import List, Dict, Any, Tuple, Union
+from typing import List, Dict
 from openai import OpenAI
-import json
-import tqdm
 import time
 import re
 
@@ -19,7 +17,7 @@ def run_openai_geval(
         :param summeval_fp: the dataset, it must be a list of dictionaries with keys "source" and "system_output"
         :param key: the openai API key
         :param model: the name of the model
-    
+
     Return
         a list of dictionaries with OpenAI's responses
     """
@@ -50,8 +48,7 @@ def run_openai_geval(
             )
             time.sleep(0.5)
 
-            all_responses = [_response.choices[i].message.content for i in
-                                range(len(_response.choices))]
+            all_responses = [_response.choices[i].message.content for i in range(len(_response.choices))]
             instance['all_responses'] = all_responses
             new_json = instance
             break
@@ -102,7 +99,7 @@ def run_GEval(
     openai_key: str,
     model: str,
 ) -> Dict[str, float]:
-    """ Computes the G-Eval score for a list of prompt templates 
+    """ Computes the G-Eval score for a list of prompt templates
 
     Args
         :param prompt_templates: a dictionary with the prompt templates.
