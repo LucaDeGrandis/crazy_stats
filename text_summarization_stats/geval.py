@@ -88,9 +88,10 @@ def compute_GEval_score(
     Return
         the G-Eval score
     """
-    relevant_responses = list(filter(lambda x: x is not None, GPT_output))
-    if relevant_responses:
-        all_scores = [parse_output(x) for x in relevant_responses]
+    all_scores = [parse_output(x) for x in GPT_output]
+    all_scores = list(filter(lambda x: x is not None, all_scores))
+    print(all_scores)
+    if all_scores:
         return sum(all_scores) / len(all_scores)
     else:
         return 0
@@ -126,7 +127,7 @@ def run_GEval(
             item, input_data, openai_key, model
         )
         geval_scores[key] = compute_GEval_score(
-            geval_responses[key]
+            geval_responses[key]['all_responses']
         )
 
     return geval_scores, geval_responses
