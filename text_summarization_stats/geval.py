@@ -133,7 +133,7 @@ def run_GEval(
         else:
             value_range = [1, 5]
         geval_scores[key] = compute_GEval_score(
-            geval_responses[key]['all_responses'],
+            geval_responses[key],
             value_range
         )
 
