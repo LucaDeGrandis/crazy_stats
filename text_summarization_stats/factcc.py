@@ -11,7 +11,7 @@ def compute_FactCC(
     summaries: List[str],
     batch_size: int = 8,
 ) -> float:
-    """ Computes FactCC for a set of input data 
+    """ Computes FactCC for a set of input data
 
     Args:
         :param input_data: List of input data
@@ -20,7 +20,7 @@ def compute_FactCC(
         The float value corresponging to the FactCC score
 
     """
-    assert len(summaries)==len(input_documents)
+    assert len(summaries) == len(input_documents)
 
     # Create the model and the tokenizer
     model_name = 'manueldeprada/FactCC'
