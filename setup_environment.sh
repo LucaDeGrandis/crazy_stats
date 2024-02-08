@@ -5,3 +5,6 @@ pip install -r requirements.txt
 git clone https://github.com/PrimerAI/blanc.git
 cd blanc
 pip install .
+
+# Download punkt
+python punkt_download.py
