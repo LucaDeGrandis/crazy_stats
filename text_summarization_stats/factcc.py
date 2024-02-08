@@ -22,7 +22,7 @@ def compute_FactCC(
     """
     assert len(summaries) == len(input_documents)
 
-    if torch.cuda.is_available():    
+    if torch.cuda.is_available():
         device = torch.device("cuda")
     else:
         device = torch.device("cpu")
@@ -58,4 +58,6 @@ def compute_FactCC(
             'label': preds[i]
         } for i in range(len(preds))])
 
-    return predictions
+    factcc_score = sum([p['label'] for p in predictions]) / len(predictions)
+
+    return factcc_score, predictions
