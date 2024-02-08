@@ -22,10 +22,16 @@ def compute_FactCC(
     """
     assert len(summaries) == len(input_documents)
 
+    if torch.cuda.is_available():    
+        device = torch.device("cuda")
+    else:
+        device = torch.device("cpu")
+
     # Create the model and the tokenizer
     model_name = 'manueldeprada/FactCC'
     tokenizer = BertTokenizer.from_pretrained(model_name)
     model = BertForSequenceClassification.from_pretrained(model_name)
+    model.to(device)
 
     # Use a sentence tokenizer to separate sentences of the system summaries
     sent_tokenizer = NLTKTokenizer(**{'tokenizer_name': 'sent_tokenize'})
@@ -45,6 +51,10 @@ def compute_FactCC(
         with torch.no_grad():
             logits = model(**input_dict).logits
             preds = logits.argmax(dim=1).tolist()
-        predictions.extend(preds)
+        predictions.extend([{
+            'input': batch_docs[i],
+            'summary': batch_summs[i],
+            'label': preds[i]
+        } for i in range(len(preds))])
 
     return predictions
