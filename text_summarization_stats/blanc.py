@@ -29,7 +29,7 @@ def compute_BLANC(
     blanc_help = BlancHelp(device=device, inference_batch_size=inference_batch_size)
 
     # Compute the BLANC score
-    scores, _ = blanc_help.eval_pairs(input_documents, summaries)
+    scores = blanc_help.eval_pairs(input_documents, summaries)
     blanc_score = sum(scores) / len(scores)
 
     return blanc_score, scores
