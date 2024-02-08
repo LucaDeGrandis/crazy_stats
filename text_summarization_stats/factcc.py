@@ -48,6 +48,7 @@ def compute_FactCC(
         batch_docs = new_documents[i:min([i+batch_size, len(new_summaries)])]
         batch_summs = new_summaries[i:min([i+batch_size, len(new_summaries)])]
         input_dict = tokenizer(batch_docs, batch_summs, max_length=512, padding='max_length', truncation='only_first', return_tensors='pt')
+        input_dict.to(device)
         with torch.no_grad():
             logits = model(**input_dict).logits
             preds = logits.argmax(dim=1).tolist()
