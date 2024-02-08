@@ -6,3 +6,4 @@ openai==1.11.1
 langchain_openai==0.0.5
 sentence-transformers==2.3.1
 transformers==4.35.2
+blanc @ https://github.com/PrimerAI/blanc.git
