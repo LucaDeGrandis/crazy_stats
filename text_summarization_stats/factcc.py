@@ -28,11 +28,11 @@ def compute_FactCC(
     model = BertForSequenceClassification.from_pretrained(model_name)
 
     # Use a sentence tokenizer to separate sentences of the system summaries
-    tokenizer = NLTKTokenizer(**{'tokenizer_name': 'sent_tokenize'})
+    sent_tokenizer = NLTKTokenizer(**{'tokenizer_name': 'sent_tokenize'})
     new_documents = []
     new_summaries = []
     for _doc, _summ in zip(input_documents, summaries):
-        for _sent in tokenizer(_summ):
+        for _sent in sent_tokenizer(_summ):
             new_documents.append(_doc)
             new_summaries.append(_sent)
 
