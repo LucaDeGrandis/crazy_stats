@@ -58,6 +58,6 @@ def compute_FactCC(
             'label': preds[i]
         } for i in range(len(preds))])
 
-    factcc_score = sum([p['label'] for p in predictions]) / len(predictions)
+    factcc_score = sum([abs(1-p['label']) for p in predictions]) / len(predictions)
 
     return factcc_score, predictions

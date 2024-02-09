@@ -14,9 +14,6 @@ import numpy as np
 parser = JsonOutputParser()
 
 
-parser = JsonOutputParser()
-
-
 def run_DRPE(
     model,
     input_document: str,
