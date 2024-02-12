@@ -9,6 +9,7 @@ import torch
 def compute_FactCC(
     input_documents: List[str],
     summaries: List[str],
+    model_name_or_path: str = 'manueldeprada/FactCC',
     batch_size: int = 8,
 ) -> float:
     """ Computes FactCC for a set of input data
@@ -28,9 +29,8 @@ def compute_FactCC(
         device = torch.device("cpu")
 
     # Create the model and the tokenizer
-    model_name = 'manueldeprada/FactCC'
-    tokenizer = BertTokenizer.from_pretrained(model_name)
-    model = BertForSequenceClassification.from_pretrained(model_name)
+    tokenizer = BertTokenizer.from_pretrained('manueldeprada/FactCC')
+    model = BertForSequenceClassification.from_pretrained(model_name_or_path)
     model.to(device)
 
     # Use a sentence tokenizer to separate sentences of the system summaries
