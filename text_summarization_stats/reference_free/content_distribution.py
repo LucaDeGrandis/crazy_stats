@@ -1,6 +1,6 @@
 from typing import List
 from itertools import chain
-from .utils import sentence_ranks
+from ..utils import sentence_ranks
 
 
 def content_distribution(

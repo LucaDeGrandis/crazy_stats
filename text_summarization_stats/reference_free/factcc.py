@@ -1,7 +1,7 @@
 from typing import List
 
 from transformers import BertForSequenceClassification, BertTokenizer
-from .tokenizers.nltk_tokenizer import NLTKTokenizer
+from ..tokenizers.nltk_tokenizer import NLTKTokenizer
 from tqdm import tqdm
 import torch
 

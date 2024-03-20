@@ -1,6 +1,6 @@
 from typing import List
-from .extractive_tokens import greedy_match
-from .utils import square_len
+from ..extractive_tokens import greedy_match
+from ..utils import square_len
 
 def Density(
         A: List[str],

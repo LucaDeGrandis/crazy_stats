@@ -1,5 +1,5 @@
 from typing import List
-from .extractive_tokens import greedy_match
+from ..extractive_tokens import greedy_match
 
 def Coverage(
         A: List[str],
