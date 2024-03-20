@@ -79,6 +79,6 @@ def compute_cc_extractiveness(samples, class_dict):
             continue
 
         if previous_ext != cur_ext:
-            ext_cvs.append(cal_cc(sample, samples[i - 1]))
+            ext_cvs.append(cal_cc(sample, samples[i - 1], class_dict))
 
     return sum(ext_cvs) / len(ext_cvs)
