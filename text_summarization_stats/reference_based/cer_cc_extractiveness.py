@@ -26,6 +26,10 @@ def get_extractiveness_values(target, source, metrics=None):
     return target_values
 
 
+def get_ext_value_one_sample(sample):
+    return get_extractiveness_values([sample['prediction']], [sample['text_in']], metrics=METRICS)[0]
+
+
 def cal_diff(gold_list, pred_list, relative=True):
     diffs = []
     for gold, pred in zip(gold_list, pred_list):
@@ -37,7 +41,7 @@ def cal_diff(gold_list, pred_list, relative=True):
     return ret
 
 
-def get_ext_score(samples):
+def compute_cer_extractiveness(samples):
     bucket_gold = []
     for sample in samples:
         bucket_gold.append(get_extractiveness_values([sample['summary']], [sample['text_in']], metrics=METRICS)[0])
@@ -48,3 +52,33 @@ def get_ext_score(samples):
     score = cal_diff(bucket_gold, bucket_pred)
 
     return score
+
+
+def cal_cc(pre_sample, cur_sample, class_dict):
+    pre_len = class_dict[pre_sample['extractiveness']]
+    cur_len = class_dict[cur_sample['extractiveness']]
+    pre_score = get_ext_value_one_sample(pre_sample)
+    cur_score = get_ext_value_one_sample(cur_sample)
+    return (pre_score - cur_score) / (pre_len - cur_len)
+
+
+def compute_cc_extractiveness(samples, class_dict):
+    ext_cvs = []
+
+    for i, sample in enumerate(samples):
+        if i == 0:
+            continue
+        previous_doc = samples[i - 1]['text_in']
+        previous_tpk = samples[i - 1]['topic']
+        previous_ext = samples[i - 1]['extractiveness']
+        cur_doc = sample['text_in']
+        cur_tpk = sample['topic']
+        cur_ext = sample['extractiveness']
+
+        if previous_tpk != cur_tpk or previous_doc != cur_doc:
+            continue
+
+        if previous_ext != cur_ext:
+            ext_cvs.append(cal_cc(sample, samples[i - 1]))
+
+    return sum(ext_cvs) / len(ext_cvs)
