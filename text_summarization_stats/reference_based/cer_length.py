@@ -4,9 +4,9 @@ from ..tokenizers.nltk_tokenizer import NLTKTokenizer
 
 
 def get_length_value(
-        input_string: str,
-        tokenizer,
-    ) -> int:
+    input_string: str,
+    tokenizer,
+) -> int:
     """Returns the length of the input_string with respect to the chosen tokenizer.
 
     Args:
@@ -31,6 +31,19 @@ def cer_intra(
     dict_ref: Dict[str, List[int]],
 ) -> float:
     """Computes the intra CER average.
+
+    Args:
+        dict_gen (Dict[str, List[int]]): A dictionary containing the generated text for each key.
+        dict_ref (Dict[str, List[int]]): A dictionary containing the reference text for each key.
+
+    Returns:
+        float: The average intra CER (Character Error Rate) value.
+
+    Raises:
+        AssertionError: If dict_gen or dict_ref is not a dictionary.
+        AssertionError: If any key in dict_gen has an empty list as its value.
+        AssertionError: If any key in dict_ref has an empty list as its value.
+
     """
     assert isinstance(dict_gen, dict)
     assert isinstance(dict_ref, dict)
@@ -62,10 +75,10 @@ def cer_intra(
 
 
 def compute_cer_length(
-        generations: List[str],
-        references: List[str],
-        lengths: List[str],
-    ) -> float:
+    generations: List[str],
+    references: List[str],
+    lengths: List[str],
+) -> float:
     """Computes the CER length.
 
     Args:
