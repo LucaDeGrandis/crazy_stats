@@ -1,3 +1,4 @@
+# WARNING: due to time constraints, this part is a bit messy and not well-organized since it is taken directly from the original repo https://github.com/psunlpgroup/MACSum
 import nltk
 import math
 
