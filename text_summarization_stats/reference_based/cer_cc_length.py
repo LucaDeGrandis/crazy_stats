@@ -121,8 +121,8 @@ def call_cc(
     """
     pre_len = classes_dict[pre_sample['len']]
     cur_len = classes_dict[cur_sample['len']]
-    pre_score = get_length_value(pre_sample, tokenizer)
-    cur_score = get_length_value(cur_sample, tokenizer)
+    pre_score = get_length_value(pre_sample['gen'], tokenizer)
+    cur_score = get_length_value(cur_sample['gen'], tokenizer)
     return (pre_score - cur_score) / (pre_len - cur_len)
 
 
