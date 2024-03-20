@@ -9,3 +9,6 @@ cd ..
 
 # Download punkt
 python punkt_download.py
+
+# Download MACSum repo
+git clone https://github.com/LucaDeGrandis/MACSum.git
