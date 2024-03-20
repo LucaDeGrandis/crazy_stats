@@ -1,0 +1,73 @@
+from nltk.corpus import stopwords
+from collections import defaultdict
+import multiprocessing
+import nltk
+import math
+
+
+st_words = stopwords.words('english')
+SPE_METRICS = 'weighted'
+
+
+def cal_intra(bucket_gold, bucket_pred, ordered_specificity_keys, relative=True):
+    diffs = []
+
+    for key in ordered_specificity_keys:
+        length = len(bucket_gold[key])
+        for i in range(length):
+            gold = bucket_gold[key][i]
+            pred = bucket_pred[key][i]
+            diff = math.fabs(gold - pred)
+            if relative:
+                diff /= gold
+            diffs.append(diff)
+
+    ret = sum(diffs) / len(diffs)
+    return ret
+
+
+def get_specificity_value(target, metrics=SPE_METRICS):
+    num_sent = len(nltk.sent_tokenize(target))
+    target = nltk.word_tokenize(target.lower())
+    target = [x for x in target if x not in st_words]
+    target_pos = nltk.pos_tag(target)
+
+    tot = len(target_pos)
+    nn_words = [x for x, y in target_pos if y == 'NN']
+    # vb_words = [x for x, y in target_pos if y == 'VB']
+    vbg_words = [x for x, y in target_pos if y == 'VBG']
+    cd_words = [x for x, y in target_pos if y == 'CD']
+    nn = len(nn_words)
+    # vb = len(vb_words)
+    cd = len(cd_words)
+    vbg = len(vbg_words)
+
+    metrics = (0.1 * vbg + 0.2 * tot + 0.3 * nn + 0.4 * cd) / num_sent
+    return metrics
+
+
+def get_specificity_values(target, metrics=SPE_METRICS, multicore=False):
+    if multicore:  # some bugs in this options
+        # Get all cores
+        cores = multiprocessing.cpu_count()
+        # start a pool
+        pool = multiprocessing.Pool(processes=cores)
+        tasks = [(x, SPE_METRICS) for x in target]
+        # do parallel calculate
+        data = pool.starmap(get_specificity_value, tasks)
+        data = [x for x in data if x is not None]
+
+        return data
+    else:
+        return [get_specificity_value(x) for x in target]
+
+
+def compute_cer_specificity(data, ordered_specificity_keys):
+    bucket_len = defaultdict(list)
+    bucket_gold = defaultdict(list)
+    for i, sample in enumerate(data):
+        bucket_len[sample['specificity']].append(get_specificity_value(sample['prediction']))
+        bucket_gold[sample['specificity']].append(get_specificity_value(sample['summary']))
+
+    intra_score = cal_intra(bucket_gold, bucket_len, ordered_specificity_keys)
+    return intra_score
