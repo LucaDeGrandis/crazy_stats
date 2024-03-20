@@ -109,3 +109,65 @@ def compute_cer_length(
         ref_lengths[_len].append(get_length_value(_ref, tokenizer))
 
     return cer_intra(gen_lengths, ref_lengths)
+
+
+def call_cc(
+    pre_sample: str,
+    cur_sample: str,
+    classes_dict: Dict[str, int],
+    tokenizer,
+) -> float:
+    """Computes CC for a single generation-reference pair.
+    """
+    pre_len = classes_dict[pre_sample['len']]
+    cur_len = classes_dict[cur_sample['len']]
+    pre_score = get_length_value(pre_sample, tokenizer)
+    cur_score = get_length_value(cur_sample, tokenizer)
+    return (pre_score - cur_score) / (pre_len - cur_len)
+
+
+def compute_cc_length(
+    generations: List[str],
+    references: List[str],
+    lengths: List[str],
+    metadata: List[Dict[str, str]],
+    classes_dict: Dict[str, int],
+) -> float:
+    """Computes CC length score.
+    """
+    assert len(generations) == len(references)
+    assert len(generations) == len(lengths)
+    assert len(generations) == len(metadata)
+    length_classes = set(lengths)
+    for _class in length_classes:
+        assert _class in classes_dict
+
+    tokenizer = NLTKTokenizer()
+
+    len_ccs = []
+
+    for i, (_gen, _ref, _len, _met) in enumerate(zip(
+        generations, references, lengths, metadata
+    )):
+        if i == 0:
+            continue
+        if _met != metadata[i-1]:
+            continue
+        if _len == lengths[i-1]:
+            continue
+        len_ccs.append(call_cc(
+            {
+                'gen': generations[i-1],
+                'ref': references[i-1],
+                'len': lengths[i-1],
+            },
+            {
+                'gen': _gen,
+                'ref': _ref,
+                'len': _len,
+            },
+            classes_dict,
+            tokenizer,
+        ))
+
+    return sum(len_ccs) / len(len_ccs)
