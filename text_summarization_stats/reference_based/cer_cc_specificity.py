@@ -5,6 +5,10 @@ import nltk
 import math
 
 
+nltk.download('stopwords')
+nltk.download('averaged_perceptron_tagger')
+
+
 st_words = stopwords.words('english')
 SPE_METRICS = 'weighted'
 
@@ -71,3 +75,37 @@ def compute_cer_specificity(data, ordered_specificity_keys):
 
     intra_score = cal_intra(bucket_gold, bucket_len, ordered_specificity_keys)
     return intra_score
+
+
+def get_spe_value_one_sample(sample):
+    return get_specificity_value(sample['prediction'])
+
+
+def cal_cc(pre_sample, cur_sample, class_dict):
+    pre_len = class_dict[pre_sample['specificity']]
+    cur_len = class_dict[cur_sample['specificity']]
+    pre_score = get_spe_value_one_sample(pre_sample)
+    cur_score = get_spe_value_one_sample(cur_sample)
+    return (pre_score - cur_score) / (pre_len - cur_len)
+
+
+def compute_cc_specificity(samples, class_dict):
+    spe_cvs = []
+
+    for i, sample in enumerate(samples):
+        if i == 0:
+            continue
+        previous_doc = samples[i - 1]['text_in']
+        previous_tpk = samples[i - 1]['topic']
+        previous_spe = samples[i - 1]['specificity']
+        cur_doc = sample['text_in']
+        cur_tpk = sample['topic']
+        cur_spe = sample['specificity']
+
+        if previous_tpk != cur_tpk or previous_doc != cur_doc:
+            continue
+
+        if previous_spe != cur_spe:
+            spe_cvs.append(cal_cc(sample, samples[i - 1], class_dict))
+
+    return sum(spe_cvs) / len(spe_cvs)
